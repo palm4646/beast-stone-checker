@@ -474,15 +474,14 @@ export default function HomePage() {
 
                         <button
                           type="button"
-                          onClick={() => handleAdd(c.id)}
-                          disabled={alreadySelected}
+                          onClick={() => (alreadySelected ? handleRemove(c.id) : handleAdd(c.id))}
                           className={`text-xs px-3 py-1.5 rounded-full font-semibold border transition-colors ${
                             alreadySelected
                               ? 'border-gray-300 text-gray-400 bg-gray-50 cursor-default'
                               : 'border-red-500 text-red-600 hover:bg-red-500 hover:text-white'
                           }`}
                         >
-                          {alreadySelected ? '追加済み' : '追加'}
+                          {alreadySelected ? '削除' : '追加'}
                         </button>
                       </div>
                     )
