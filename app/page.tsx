@@ -110,8 +110,10 @@ export default function HomePage() {
   const [rarityFilter, setRarityFilter] = useState<Character['rarity'] | 'ALL'>('ALL')
   const [selected, setSelected] = useState<SelectedCharacter[]>([])
   const [activeTab, setActiveTab] = useState<'stones' | 'matatabi'>('stones')
-  // ★ 追加: 「選択中のキャラ」開閉用
   const [isSelectedOpen, setIsSelectedOpen] = useState(true)
+  // ★ 追加：モード（謎のタマゴ / 第3形態 / 第4形態）
+  type Mode = 'egg' | 'form3' | 'form4'
+  const [mode, setMode] = useState<Mode>('egg')
 
   const categories = useMemo(() => {
     const set = new Set<Character['category']>()
@@ -168,6 +170,20 @@ export default function HomePage() {
   const filteredCharacters = useMemo(() => {
     const kw = keyword.trim().toLowerCase()
     return CHARACTERS.filter((c) => {
+      // ★ まずモードごとの絞り込み
+      if (mode === 'egg') {
+        // 謎のタマゴ: id が N で始まるキャラ
+        if (!c.id.startsWith('N')) return false
+      } else if (mode === 'form3') {
+        // 第3形態: ガチャキャラ & 2→3 の進化を持つ
+        const has2to3 = c.requirements.some((r) => r.from === 2 && r.to === 3)
+        if (!(c.category === 'ガチャキャラ' && has2to3)) return false
+      } else if (mode === 'form4') {
+        // 第4形態: ガチャキャラ & 3→4 の進化を持つ
+        const has3to4 = c.requirements.some((r) => r.from === 3 && r.to === 4)
+        if (!(c.category === 'ガチャキャラ' && has3to4)) return false
+      }
+
       const matchKeyword =
         kw === '' ||
         c.name.toLowerCase().includes(kw) ||
@@ -178,7 +194,7 @@ export default function HomePage() {
 
       return matchKeyword && matchCategory && matchRarity
     })
-  }, [keyword, category, rarityFilter])
+  }, [keyword, category, rarityFilter, mode])
 
   const selectedCharacters = useMemo(() => {
     return selected
@@ -286,6 +302,45 @@ export default function HomePage() {
 
       <main className="py-10 md:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* ★ 追加：モード切り替えボタン */}
+          <div className="flex justify-center mb-6">
+             <div className="inline-flex rounded-full bg-white shadow-md border border-gray-200 p-1 text-sm">
+              <button
+                type="button"
+                onClick={() => setMode('egg')}
+                className={`px-4 py-1.5 rounded-full transition-colors ${
+                  mode === 'egg'
+                  ? 'bg-red-600 text-white shadow'
+                  : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                謎のタマゴ
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode('form3')}
+                className={`px-4 py-1.5 rounded-full transition-colors ${
+                  mode === 'form3'
+                  ? 'bg-red-600 text-white shadow'
+                  : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                第3形態
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode('form4')}
+                className={`px-4 py-1.5 rounded-full transition-colors ${
+                  mode === 'form4'
+                  ? 'bg-purple-600 text-white shadow'
+                  : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                第4形態
+              </button>
+             </div>
+          </div>
+
           <section className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Filters */}
             <div className="lg:col-span-3">
